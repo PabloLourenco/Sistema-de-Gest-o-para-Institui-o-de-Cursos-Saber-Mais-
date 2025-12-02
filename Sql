@@ -1,0 +1,224 @@
+-- **********************************************
+-- 01_estrutura.sql
+-- Comandos para a criação do esquema (schema) do banco de dados
+-- **********************************************
+
+-- 1. CRIAÇÃO DO BANCO DE DADOS
+CREATE DATABASE IF NOT EXISTS SISTEMA_GESTAO_CURSOS
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_general_ci;
+
+USE SISTEMA_GESTAO_CURSOS;
+
+-- 2. TABELA ALUNOS
+CREATE TABLE alunos (
+    aluno_id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    cpf VARCHAR(14) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    data_nascimento DATE NOT NULL,
+    telefone VARCHAR(20),
+    data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_general_ci;
+
+-- 3. TABELA PROFESSORES
+CREATE TABLE professores (
+    professor_id INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    cpf VARCHAR(14) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    especialidade VARCHAR(50) NOT NULL,
+    data_contratacao DATE NOT NULL
+)
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_general_ci;
+
+-- 4. TABELA CURSOS
+CREATE TABLE cursos (
+    curso_id INT PRIMARY KEY AUTO_INCREMENT,
+    titulo VARCHAR(100) UNIQUE NOT NULL,
+    carga_horaria INT NOT NULL,
+    CHECK (carga_horaria > 0),
+    valor_base DECIMAL(10, 2) NOT NULL,
+    ementa TEXT
+)
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_general_ci;
+
+-- 5. TABELA TURMAS (Relacionamento Curso-Professor)
+CREATE TABLE turmas (
+    turma_id INT PRIMARY KEY AUTO_INCREMENT,
+    curso_id INT NOT NULL,
+    professor_id INT NOT NULL,
+    data_inicio DATE NOT NULL,
+    data_fim DATE NOT NULL,
+    limite_vagas INT NOT NULL,
+    status_turma ENUM('ABERTA', 'FECHADA', 'CONCLUIDA') DEFAULT 'ABERTA' NOT NULL,
+
+    FOREIGN KEY (curso_id) REFERENCES cursos(curso_id),
+    FOREIGN KEY (professor_id) REFERENCES professores(professor_id)
+)
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_general_ci;
+
+-- 6. TABELA MATRICULAS (Relacionamento Aluno-Turma)
+CREATE TABLE matriculas (
+    matricula_id INT PRIMARY KEY AUTO_INCREMENT,
+    aluno_id INT NOT NULL,
+    turma_id INT NOT NULL,
+    data_matricula TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status_matricula ENUM('ATIVA', 'TRANCADA', 'CANCELADA', 'CONCLUIDA') DEFAULT 'ATIVA' NOT NULL,
+
+    FOREIGN KEY (aluno_id) REFERENCES alunos(aluno_id),
+    FOREIGN KEY (turma_id) REFERENCES turmas(turma_id),
+    
+    -- Garante que um aluno não se matricule duas vezes na mesma turma
+    UNIQUE (aluno_id, turma_id)
+)
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_general_ci;
+
+-- **********************************************
+-- 02_dados_teste.sql
+-- Comandos para a inserção de dados de exemplo (Massa de Teste)
+-- **********************************************
+
+USE SISTEMA_GESTAO_CURSOS;
+
+-- 1. DADOS DE CURSOS (5 Registros)
+INSERT INTO cursos (titulo, carga_horaria, valor_base, ementa) VALUES
+('Introdução ao MySQL e Bancos de Dados', 40, 450.00, 'Conceitos fundamentais de bancos de dados relacionais e prática com MySQL.'),
+('Desenvolvimento Web Full Stack com Python', 120, 1800.00, 'Programação Python, Django, HTML, CSS e JavaScript para criação de aplicações web.'),
+('Marketing Digital Estratégico', 60, 950.00, 'Estratégias de SEO, mídias sociais, e-mail marketing e análise de métricas.'),
+('Análise de Dados com Power BI e Excel', 80, 1200.00, 'Criação de dashboards, manipulação e visualização de dados para tomada de decisão.'),
+('Liderança e Gestão de Equipes', 30, 750.00, 'Habilidades de liderança, comunicação eficaz e gestão de conflitos no ambiente de trabalho.');
+
+-- 2. DADOS DE PROFESSORES (5 Registros)
+INSERT INTO professores (nome, cpf, email, especialidade, data_contratacao) VALUES
+('Ana Clara Lima', '111.222.333-44', 'ana.lima@escola.com', 'Banco de Dados', '2022-08-15'),
+('Bruno Mendes Costa', '555.666.777-88', 'bruno.costa@escola.com', 'Desenvolvimento Web', '2021-03-01'),
+('Carla Souza Pereira', '999.000.111-22', 'carla.pereira@escola.com', 'Marketing Digital', '2023-01-10'),
+('Daniel Alves Reis', '333.444.555-66', 'daniel.reis@escola.com', 'Análise de Dados', '2022-05-20'),
+('Eliane Ferreira Gomes', '777.888.999-00', 'eliane.gomes@escola.com', 'Gestão e Liderança', '2023-11-05');
+
+-- 3. DADOS DE ALUNOS (20 Registros)
+INSERT INTO alunos (nome, cpf, email, data_nascimento, telefone) VALUES
+('Felipe Oliveira Santos', '101.001.001-01', 'felipe.santos@email.com', '1995-05-10', '(21) 98765-4321'),
+('Gabriela Rocha Vieira', '202.002.002-02', 'gabriela.vieira@email.com', '2000-01-20', '(11) 99887-7665'),
+('Henrique Barbosa Melo', '303.003.003-03', 'henrique.melo@email.com', '1998-11-15', '(31) 97654-3210'),
+('Isabela Fernandes Dias', '404.004.004-04', 'isabela.dias@email.com', '1997-03-25', '(41) 96543-2109'),
+('João Pedro Nogueira', '505.005.005-05', 'joao.nogueira@email.com', '2002-07-08', '(51) 95432-1098'),
+('Laura Martins Lima', '606.006.006-06', 'laura.lima@email.com', '1996-12-03', '(61) 94321-0987'),
+('Miguel Alves Correia', '707.007.007-07', 'miguel.correia@email.com', '1999-09-19', '(71) 93210-9876'),
+('Natália Gomes Pires', '808.008.008-08', 'natalia.pires@email.com', '1994-04-14', '(81) 92109-8765'),
+('Otávio Ribeiro Cunha', '909.009.009-09', 'otavio.cunha@email.com', '2001-02-28', '(91) 91098-7654'),
+('Patrícia Santos Silva', '121.121.121-12', 'patricia.silva@email.com', '1993-06-01', '(13) 90987-6543'),
+('Rafael Teixeira Rocha', '131.131.131-13', 'rafael.rocha@email.com', '1990-10-22', '(19) 98765-1234'),
+('Sofia Oliveira Costa', '141.141.141-14', 'sofia.costa@email.com', '1998-08-05', '(27) 97654-4321'),
+('Thiago Pereira Gomes', '151.151.151-15', 'thiago.gomes@email.com', '1997-01-11', '(62) 96543-7654'),
+('Vitória Rodrigues Mendes', '161.161.161-16', 'vitoria.mendes@email.com', '2003-04-18', '(83) 95432-1098'),
+('William Farias Lima', '171.171.171-17', 'william.lima@email.com', '1992-07-29', '(92) 94321-0987'),
+('Xenia Borges Castro', '181.181.181-18', 'xenia.castro@email.com', '1991-09-07', '(16) 93210-9876'),
+('Yuri Silva Alves', '191.191.191-19', 'yuri.alves@email.com', '1995-12-12', '(17) 92109-8765'),
+('Zélia Mendes Duarte', '201.201.201-20', 'zelia.duarte@email.com', '1996-02-24', '(18) 91098-7654'),
+('André Luiz Pires', '211.211.211-21', 'andre.pires@email.com', '1994-08-30', '(14) 90987-6543'),
+('Bárbara Gomes Rocha', '221.221.221-22', 'barbara.rocha@email.com', '1999-10-02', '(12) 98765-4321');
+
+-- 4. DADOS DE TURMAS (3 Registros)
+INSERT INTO turmas (curso_id, professor_id, data_inicio, data_fim, limite_vagas, status_turma) VALUES
+(1, 1, '2025-01-15', '2025-03-15', 30, 'ABERTA'),
+(2, 2, '2025-02-01', '2025-05-01', 25, 'ABERTA'),
+(3, 3, '2025-01-20', '2025-03-30', 40, 'FECHADA');
+
+-- 5. DADOS DE MATRÍCULAS (5 Registros)
+INSERT INTO matriculas (aluno_id, turma_id, data_matricula, status_matricula) VALUES
+(1, 1, '2024-11-20 10:00:00', 'ATIVA'),
+(2, 1, '2024-11-20 11:30:00', 'ATIVA'),
+(3, 2, '2024-11-21 14:00:00', 'ATIVA'),
+(4, 3, '2024-11-21 15:00:00', 'ATIVA'),
+(5, 3, '2024-11-22 09:00:00', 'ATIVA');
+
+USE SISTEMA_GESTAO_CURSOS;
+
+-- **********************************************
+-- CONSULTAS BÁSICAS
+-- **********************************************
+
+-- 1. Consultar todos os alunos:
+SELECT aluno_id, nome, email FROM alunos;
+
+-- 2. Consultar o título, carga horária e valor dos cursos com valor acima de R$ 1000.00
+SELECT titulo, carga_horaria, valor_base FROM cursos WHERE valor_base > 1000.00;
+
+
+-- **********************************************
+-- CONSULTAS COM JOIN (RELACIONAMENTOS)
+-- **********************************************
+
+-- 3. Listar todas as turmas, mostrando o título do curso e o nome do professor responsável
+SELECT
+    t.turma_id,
+    c.titulo AS Curso,
+    p.nome AS Professor_Responsavel,
+    t.status_turma
+FROM
+    turmas t
+JOIN
+    cursos c ON t.curso_id = c.curso_id
+JOIN
+    professores p ON t.professor_id = p.professor_id;
+
+-- 4. Listar todos os alunos matriculados na Turma 1 (Introdução ao MySQL)
+SELECT
+    a.nome AS Nome_Aluno,
+    m.data_matricula,
+    m.status_matricula
+FROM
+    matriculas m
+JOIN
+    alunos a ON m.aluno_id = a.aluno_id
+WHERE
+    m.turma_id = 1;
+
+USE SISTEMA_GESTAO_CURSOS;
+
+-- **********************************************
+-- COMANDOS UPDATE
+-- **********************************************
+
+-- 1. Aumentar a carga horária de todos os cursos com menos de 50 horas em 10 horas
+UPDATE cursos
+SET carga_horaria = carga_horaria + 10
+WHERE carga_horaria < 50;
+
+-- 2. Corrigir o status da matrícula do aluno de ID 4, indicando que o curso foi trancado
+UPDATE matriculas
+SET status_matricula = 'TRANCADA'
+WHERE aluno_id = 4 AND turma_id = 3;
+
+-- 3. Atualizar o e-mail de um professor específico (ID 5 - Eliane)
+UPDATE professores
+SET email = 'eliane.gestao@escola.com'
+WHERE professor_id = 5;
+
+
+-- **********************************************
+-- COMANDOS DELETE
+-- **********************************************
+
+-- Observação: Devido às chaves estrangeiras, a ordem de exclusão deve ser da tabela dependente para a principal.
+
+-- 1. Deletar as matrículas da Turma 3 para poder deletar a turma em seguida.
+DELETE FROM matriculas
+WHERE turma_id = 3;
+
+-- 2. Deletar a Turma 3, que foi fechada e não será mais oferecida
+DELETE FROM turmas
+WHERE turma_id = 3;
+
+-- 3. Deletar o cadastro de um aluno específico que nunca se matriculou (Aluno ID 10)
+DELETE FROM alunos
+WHERE aluno_id = 10;
+
